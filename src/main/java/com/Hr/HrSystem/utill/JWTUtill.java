@@ -2,6 +2,7 @@ package com.Hr.HrSystem.utill;
 
 
 
+import com.Hr.HrSystem.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -38,7 +39,14 @@ public class JWTUtill {
         return claimsResolver.apply(claim);
     }
 
-    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+
+
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        extraClaims.put("id", ((User) userDetails).getId()); // Adding user ID
+        extraClaims.put("email", userDetails.getUsername()); // Adding email (username)
+        extraClaims.put("role", ((User) userDetails).getUserRole());
+        extraClaims.put("Name", ((User) userDetails).getName());
+        extraClaims.put("", ((User) userDetails).getName());
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
@@ -47,6 +55,7 @@ public class JWTUtill {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
