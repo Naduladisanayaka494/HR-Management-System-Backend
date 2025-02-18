@@ -1,11 +1,12 @@
 package com.Hr.HrSystem.controller;
 
-
 import com.Hr.HrSystem.dto.AuthenticationRequest;
 import com.Hr.HrSystem.dto.AuthenticationResponse;
 import com.Hr.HrSystem.dto.SignUpRequest;
 import com.Hr.HrSystem.dto.UserDto;
+import com.Hr.HrSystem.entity.Account;
 import com.Hr.HrSystem.entity.User;
+import com.Hr.HrSystem.repository.AccountRepository;
 import com.Hr.HrSystem.repository.UserRepository;
 import com.Hr.HrSystem.services.auth.AuthServiceImpl;
 import com.Hr.HrSystem.services.jwt.UserServiceImpl;
@@ -23,49 +24,51 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
-
 public class AuthController {
 
     private final AuthServiceImpl authService;
-    private final AuthenticationManager authenticationManager;
     private final UserServiceImpl userService;
     private final JWTUtill jwtUtill;
-    private  final UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthController(AuthServiceImpl authService, AuthenticationManager authenticationManager, UserServiceImpl userService, JWTUtill jwtUtill, UserRepository userRepository) {
+    public AuthController(AuthServiceImpl authService, AuthenticationManager authenticationManager, UserServiceImpl userService, JWTUtill jwtUtill, UserRepository userRepository, AccountRepository accountRepository) {
         this.authService = authService;
-        this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtUtill = jwtUtill;
         this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
+        this.authenticationManager = authenticationManager;
     }
 
+    // API to create an Account
+    @PostMapping("/create-account")
+    public ResponseEntity<?> createAccount(@RequestBody Account account) {
+        Account createdAccount = accountRepository.save(account);
+        return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
+    }
+
+    // Modified signup method to associate a user with an account
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignUpRequest signupRequest) {
+        Optional<Account> accountOptional = accountRepository.findById(signupRequest.getAccountId());
+        if (!accountOptional.isPresent()) {
+            return new ResponseEntity<>("Account not found", HttpStatus.NOT_FOUND);
+        }
+
+        Account account = accountOptional.get();
         if(authService.hasAdminwithemail(signupRequest.getEmail()))
-            return new ResponseEntity<>("email already exists",HttpStatus.NOT_ACCEPTABLE);
-        UserDto createduserdto  =authService.createdDataEntry(signupRequest);
-        if(createduserdto==null) return new ResponseEntity<>(
-                "Admin not created", HttpStatus.BAD_REQUEST
-        );
-        return new ResponseEntity<>(createduserdto,HttpStatus.CREATED);
+            return new ResponseEntity<>("Email already exists", HttpStatus.NOT_ACCEPTABLE);
 
-    }
-
-    @PostMapping("/signup/admin")
-    public ResponseEntity<?> signupAdmin(@RequestBody SignUpRequest signupRequest) {
-        if(authService.hasAdminwithemail(signupRequest.getEmail()))
-            return new ResponseEntity<>("email already exists",HttpStatus.NOT_ACCEPTABLE);
-        UserDto createduserdto  =authService.createdAdmin(signupRequest);
-        if(createduserdto==null) return new ResponseEntity<>(
-                "Admin not created", HttpStatus.BAD_REQUEST
-        );
-        return new ResponseEntity<>(createduserdto,HttpStatus.CREATED);
-
+        UserDto createdUserDto = authService.createUserWithAccount(signupRequest, account);
+        if (createdUserDto == null) {
+            return new ResponseEntity<>("User not created", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(createdUserDto, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -87,20 +90,5 @@ public class AuthController {
         }
         return authenticationResponse;
 
-    }
-
-    @GetMapping("/users")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        List<UserDto> userDtos = users.stream().map(user -> {
-            UserDto userDto = new UserDto();
-            userDto.setId(user.getId());
-            userDto.setName(user.getName());
-            userDto.setEmail(user.getEmail());
-            userDto.setUserRole(user.getUserRole());
-            return userDto;
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(userDtos);
     }
 }

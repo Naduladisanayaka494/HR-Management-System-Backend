@@ -4,9 +4,6 @@ import lombok.Data;
 
 @Data
 public class SignUpRequest {
-    private String name;
-    private String email;
-    private String password;
     public String getName() {
         return name;
     }
@@ -31,7 +28,16 @@ public class SignUpRequest {
         this.password = password;
     }
 
+    public Long getAccountId() {
+        return accountId;
+    }
 
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
+    }
+
+    private String name;
+    private String email;
+    private String password;
+    private Long accountId;  // New field for account association
 }
-
-

@@ -1,21 +1,19 @@
 package com.Hr.HrSystem.entity;
 
-
 import com.Hr.HrSystem.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 @Entity
 @Data
 @Table(name = "users")
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,6 +21,10 @@ public class User implements UserDetails {
     private String name;
     private String email;
     private String password;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;  // Many users can belong to one account
 
     public Long getId() {
         return id;
@@ -32,12 +34,9 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-
     public String getName() {
         return name;
     }
-
-
 
     public void setName(String name) {
         this.name = name;
@@ -59,6 +58,14 @@ public class User implements UserDetails {
         this.password = password;
     }
 
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
     public UserRole getUserRole() {
         return userRole;
     }
@@ -69,7 +76,6 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
