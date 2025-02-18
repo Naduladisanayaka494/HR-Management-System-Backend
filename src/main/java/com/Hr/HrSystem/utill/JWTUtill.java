@@ -43,10 +43,11 @@ public class JWTUtill {
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         extraClaims.put("id", ((User) userDetails).getId()); // Adding user ID
+        extraClaims.put("accountId", ((User) userDetails).getAccount().getId());
+        extraClaims.put("companyName", ((User) userDetails).getAccount().getAccountName());// Adding Account ID
         extraClaims.put("email", userDetails.getUsername()); // Adding email (username)
         extraClaims.put("role", ((User) userDetails).getUserRole());
         extraClaims.put("Name", ((User) userDetails).getName());
-        extraClaims.put("", ((User) userDetails).getName());
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
@@ -55,6 +56,7 @@ public class JWTUtill {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
 
     public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
