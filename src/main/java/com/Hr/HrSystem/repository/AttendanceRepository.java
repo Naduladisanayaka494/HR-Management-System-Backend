@@ -11,5 +11,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     List<Attendance> findByUserId(Long userId);
 
+    Optional<Attendance> findByUserIdAndCheckOutTimeIsNull(Long userId);
 }
 

@@ -45,7 +45,7 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
     }
 
-    // API to create an Account
+
     @PostMapping("/create-account")
     public ResponseEntity<?> createAccount(@RequestBody Account account) {
         Account createdAccount = accountRepository.save(account);

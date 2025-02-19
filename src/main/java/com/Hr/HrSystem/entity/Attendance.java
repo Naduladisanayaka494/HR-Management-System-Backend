@@ -1,22 +1,32 @@
 package com.Hr.HrSystem.entity;
 
 import jakarta.persistence.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import lombok.Data;
 import java.time.LocalDateTime;
-import java.util.List;
 
-// Attendance Entity
 @Entity
-@Table(name = "attendence")
+@Data
+@Table(name = "attendance")
 public class Attendance {
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    private LocalDateTime checkInTime;
+    private LocalDateTime checkOutTime;
+    private boolean late;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public User getUser() {
         return user;
@@ -42,19 +52,11 @@ public class Attendance {
         this.checkOutTime = checkOutTime;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    private LocalDateTime checkInTime;
-    private LocalDateTime checkOutTime;
-
-
-    public void setId(Long id) {
-        this.id = id;
+    public boolean isLate() {
+        return late;
     }
 
-    public Long getId() {
-        return id;
+    public void setLate(boolean late) {
+        this.late = late;
     }
 }
